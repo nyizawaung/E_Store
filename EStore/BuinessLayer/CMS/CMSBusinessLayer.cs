@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EStore.BuinessLayer
+namespace EStore.BuinessLayer.CMS
 {
-    public class EStoreBusinessLayer
+    public class CMSBusinessLayer
     {
     }
 }

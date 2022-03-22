@@ -11,6 +11,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.EntityFrameworkCore.Extensions;
+using EStore.BuinessLayer.EStore;
+using EStore.BuinessLayer.CMS;
 
 namespace EStore
 {
@@ -28,6 +30,7 @@ namespace EStore
         {
             services.AddEntityFrameworkMySQL();
             services.AddDbContext<ESDBContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
+            services.AddScoped<IEStoreBusinessLayer, EStoreBusinessLayer>();
             services.AddRazorPages();
         }
 
