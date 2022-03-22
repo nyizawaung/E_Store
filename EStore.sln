@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31605.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EStore", "EStore\EStore.csproj", "{0402DCD1-7CA9-4126-AF15-5694B96C8E79}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0402DCD1-7CA9-4126-AF15-5694B96C8E79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0402DCD1-7CA9-4126-AF15-5694B96C8E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0402DCD1-7CA9-4126-AF15-5694B96C8E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0402DCD1-7CA9-4126-AF15-5694B96C8E79}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {95B35EB1-98C6-46BA-BAC0-8F04DCD05A19}
+	EndGlobalSection
+EndGlobal
