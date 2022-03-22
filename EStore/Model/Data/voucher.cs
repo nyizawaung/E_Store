@@ -14,15 +14,15 @@ namespace EStore.Model
         public int ID { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public DateTime Expiry_Date { get; set; }
+        public Nullable<DateTime> Expiry_Date { get; set; }
         public byte[] Image { get; set; }
-        public decimal Amount { get; set; }
-        public string Payment_Method { get; set; }
-        public int Payment_Method_Discount { get; set; }
-        public int Quantity { get; set; }
+        public decimal? Amount { get; set; }
+        public string PaymentMethod { get; set; }
+        public int? Discount { get; set; }
+        public int? Quantity { get; set; }
         public string Buy_Type { get; set; }
-        public int Is_Active { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public int IsActive { get; set; }
+        public Nullable<DateTime> CreatedDate { get; set; }
         public int MaximumVoucherPerUser { get; set; }
         public decimal Price { get; set; }
     }

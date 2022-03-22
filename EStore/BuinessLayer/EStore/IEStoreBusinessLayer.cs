@@ -8,7 +8,9 @@ namespace EStore.BuinessLayer.EStore
 {
     public interface IEStoreBusinessLayer
     {
+        Task<LoginRespModel> Login(LoginRequestModel obj);
         Task<BuyEVoucherRespModel> BuyEVoucher(BuyEVoucherRequestModel obj);
-        Task<GetVoucherRespModel> GetVoucherList(GetVoucherRequestModel obj);
+        Task<VoucherListRespModel> GetVoucherList(GetVoucherRequestModel obj);
+        Task<GetPromoCodeRespModel> GetPromoCodeList(GetPromoCodeRequestModel obj);
     }
 }

@@ -15,11 +15,11 @@ namespace EStore.Model
         public string UserName { get; set; }
         public string PhoneNumber { get; set; }
         public int VoucherID { get; set; }
-        public int IsUsed { get; set; }
-        public DateTime UsedDate { get; set; }
+        public int? IsUsed { get; set; }
+        public Nullable<DateTime> UsedDate { get; set; }
         [MaxLength(11)]
         public string PromoCode { get; set; }
         public byte[] QRCode { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public Nullable<DateTime> CreatedDate { get; set; }
     }
 }

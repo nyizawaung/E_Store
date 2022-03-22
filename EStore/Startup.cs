@@ -13,6 +13,11 @@ using Microsoft.EntityFrameworkCore;
 using MySql.Data.EntityFrameworkCore.Extensions;
 using EStore.BuinessLayer.EStore;
 using EStore.BuinessLayer.CMS;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using EStore.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace EStore
 {
@@ -28,9 +33,30 @@ namespace EStore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFrameworkMySQL();
+            services.AddControllers();
+            services.AddSession();
             services.AddDbContext<ESDBContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
+            //services.AddDbContext<ESDBContext>();
             services.AddScoped<IEStoreBusinessLayer, EStoreBusinessLayer>();
+            services.AddScoped<ICMSBusinessLayer, CMSBusinessLayer>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new
+                    SymmetricSecurityKey
+                    (Encoding.UTF8.GetBytes
+                    (Configuration["Jwt:Key"]))
+                };
+            });
+
             services.AddRazorPages();
         }
 
@@ -54,11 +80,26 @@ namespace EStore
             app.UseRouting();
 
             app.UseAuthorization();
-
+            app.UseSession();
+            app.Use(async (context, next) =>
+            {
+                var token = context.Session.GetString("Token");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Request.Headers.Add("Authorization", "Bearer " + token);
+                }
+                await next();
+            });
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+            //app.UseEndpoints(endpoints =>
+            //{
+            //    endpoints.MapRazorPages();
+            //});
         }
     }
 }

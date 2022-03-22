@@ -10,7 +10,6 @@ namespace EStore.Model
     {
         [Required]
         public int UserID { get; set; }
-        [Required]
         public string SessionID { get; set; }
         [Required]
         public int VoucherID { get; set; }

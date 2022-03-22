@@ -9,15 +9,17 @@ namespace EStore.Model
 {
     public class ESDBContext:DbContext
     {
-        public ESDBContext()
-        {
-
-        }
         public ESDBContext(DbContextOptions<ESDBContext> options) : base(options){
 
         }
         public DbSet<voucher> Vouchers { get; set; }
         public DbSet<customer_voucher> Customer_Vouchers { get; set; }
         public DbSet<admin> Admins { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder){
+
+            base.OnModelCreating(modelBuilder);
+
+        }
     }
 }

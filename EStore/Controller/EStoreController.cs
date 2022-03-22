@@ -10,20 +10,39 @@ using EStore.BuinessLayer.EStore;
 
 namespace EStore.Controller
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class EStoreController : ControllerBase
     {
         private readonly IEStoreBusinessLayer eStoreBusinessLayer;
-        public EStoreController(IEStoreBusinessLayer _estoreBusinessLayer)
+        //private readonly ITokenService tokenService;
+        public EStoreController(IEStoreBusinessLayer _estoreBusinessLayer/*,ITokenService _tokenservice*/)
         {
             eStoreBusinessLayer = _estoreBusinessLayer;
+            //tokenService = _tokenservice;
         }        
-        [HttpPost("BuyEVoucher")]
-        [SessionFilter]
+        [HttpPost]
+        [Route("api/EStore/Login")]
+        public async Task<IActionResult> Login(LoginRequestModel obj)
+        {
+            var error = "";
+            var respModel = new LoginRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.Login(obj);
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                respModel.RespDescription = ex.Message;
+            }
+            return Ok(respModel);
+        }
+
+        [Route("api/EStore/BuyEVoucher")]
+        [HttpPost]
         public async Task<IActionResult> BuyEVoucher(BuyEVoucherRequestModel obj)
         {
-            if(obj.PaymentType != "Cash")
+            if (obj.PaymentType != "Cash")
             {
                 if(string.IsNullOrEmpty(obj.CardNumber))
                 {
@@ -32,6 +51,43 @@ namespace EStore.Controller
             }
             var result = await eStoreBusinessLayer.BuyEVoucher(obj);
             return Ok(result);
+        }
+
+        [Route("api/EStore/PurchaseHistory")]
+        [HttpPost]
+        public async Task<IActionResult> PurchaseHistory(GetPromoCodeRequestModel obj)
+        {   
+            var error = "";
+            var respModel = new GetPromoCodeRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.GetPromoCodeList(obj);
+                respModel.RespDescription = "Success";
+            }
+            catch(Exception ex)
+            {
+                error = ex.Message;
+                respModel.RespDescription = ex.Message;
+            }
+            return Ok(respModel);
+        }
+        [Route("api/EStore/VoucherList")]
+        [HttpPost]
+        public async Task<IActionResult> VoucherList(GetVoucherRequestModel obj)
+        { 
+            var error = "";
+            var respModel = new VoucherListRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.GetVoucherList(obj);
+                respModel.RespDescription = "Success";
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                respModel.RespDescription = ex.Message;
+            }
+            return Ok(respModel);
         }
     }
 }

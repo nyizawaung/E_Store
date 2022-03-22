@@ -15,8 +15,8 @@ namespace EStore.Model
         public string Name { get; set; }
         public string Password { get; set; }
         public string Session { get; set; }
-        public DateTime SessionEndTime { get; set; }
-        public int IsActive { get; set; }
+        public Nullable<DateTime> SessionEndTime { get; set; }
+        public int? IsActive { get; set; }
         public string Role { get; set; }
     }
 }

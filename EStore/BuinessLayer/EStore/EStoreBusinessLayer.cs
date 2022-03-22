@@ -9,22 +9,54 @@ using System.Threading.Tasks;
 using EStore.Model;
 using EStore.Helper;
 using System.Linq.Expressions;
-using EStore.Model;
+using EStore.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace EStore.BuinessLayer.EStore
 {
     public class EStoreBusinessLayer : IEStoreBusinessLayer
     {
         private ESDBContext dbContext;
-        public EStoreBusinessLayer()
+        private ITokenService tokenService;
+        private IConfiguration configuration;
+        public EStoreBusinessLayer(ITokenService _tokenService, IConfiguration config,ESDBContext context)
         {
-            dbContext = new ESDBContext();
+            dbContext = context;
+            tokenService = _tokenService;
+            configuration = config;
+        }
+        public async Task<LoginRespModel> Login(LoginRequestModel obj)
+        {
+            var respModel = new LoginRespModel();
+            var result = dbContext.Admins.Where(a => a.Name == obj.UserName && a.Password == obj.Password).FirstOrDefault();
+            if (result != null)
+            {
+                respModel.UserID = result.ID;
+                respModel.SessionID = Helper.Helper.EncryptString(tokenService.BuildToken(configuration["Jwt:Key"].ToString(), configuration["Jwt:Issuer"].ToString(), result));
+                respModel.RespDescription = "Success";
+            }
+            else
+            {
+                respModel.UserID = -1;
+                respModel.SessionID = null;
+                respModel.RespDescription = "Incorrect Username or Password";
+            }
+            dbContext.Dispose();
+            return respModel;
         }
         public async Task<BuyEVoucherRespModel> BuyEVoucher(BuyEVoucherRequestModel obj)
         { 
             var respModel = new BuyEVoucherRespModel();
+            #region check JWT
+            if (!tokenService.IsTokenValid(configuration["Jwt:Key"].ToString(), configuration["Jwt:Issuer"].ToString(), Helper.Helper.DecryptString(obj.SessionID)))
+            {
+                respModel.status = "Please try to login again!";
+                return respModel;
+            }
+            #endregion
+
             bool allow = false;
-            var buyStatus = Validater.CheckValidateToBuy(obj.PhoneNumber, obj.VoucherID, obj.Quantity, out allow);
+            var buyStatus = CheckValidateToBuy(obj.PhoneNumber, obj.VoucherID, obj.Quantity, out allow);
             if (!allow)
             {
                 respModel.status = "Fail";
@@ -32,6 +64,11 @@ namespace EStore.BuinessLayer.EStore
                 return respModel;
             }
             var voucherInfo = dbContext.Vouchers.Where(a => a.ID == obj.VoucherID).FirstOrDefault();
+            int discount = 0;
+            if (voucherInfo.PaymentMethod == obj.PaymentType || voucherInfo.PaymentMethod=="all")
+            {
+                discount = voucherInfo.Discount.Value;
+            }
             for (int i = 0; i < obj.Quantity; i++)
             {
                 var customer_voucher = new customer_voucher()
@@ -48,58 +85,100 @@ namespace EStore.BuinessLayer.EStore
                 dbContext.SaveChanges();
 
                 #region check validate again while buying
-                buyStatus = Validater.CheckValidateToBuy(obj.PhoneNumber, obj.VoucherID, obj.Quantity, out allow);
+                buyStatus = CheckValidateToBuy(obj.PhoneNumber, obj.VoucherID, obj.Quantity, out allow);
                 if (!allow)
                 {
                     respModel.status = "Fail";
                     respModel.reason = $"Sorry we can only managed to buy {i+1} vouchers(s) for {obj.UserName} with Phone Number {obj.PhoneNumber}";
-                    respModel.TotalPrice = (i + 1) * voucherInfo.Price;
+                    respModel.TotalPrice =  ((i + 1) * voucherInfo.Price)*(100-discount) ;
                     return respModel;
                 }
                 #endregion
             }
             respModel.status = "Success";
             respModel.reason = "Success";
-            respModel.TotalPrice = (obj.Quantity) * voucherInfo.Price;
+            respModel.TotalPrice = ((obj.Quantity) * voucherInfo.Price)*(100-discount);
+
+            dbContext.Dispose();
             return respModel;
         }
-        public async Task<GetVoucherRespModel> GetVoucherList(GetVoucherRequestModel obj)
+        public async Task<GetPromoCodeRespModel> GetPromoCodeList(GetPromoCodeRequestModel obj)
         {
-            var respModel = new GetVoucherRespModel();
+            var respModel = new GetPromoCodeRespModel();
+            #region check JWT
+            if (!tokenService.IsTokenValid(configuration["Jwt:Key"].ToString(), configuration["Jwt:Issuer"].ToString(), Helper.Helper.DecryptString(obj.SessionID)))
+            {
+                respModel.RespDescription = "Please try to login again!";
+                return respModel;
+            }
+            #endregion
             Expression<Func<customer_voucher, bool>> voucherTypeFilter = x => true;
-            if (obj.VoucherType=="UnUsed")
+            if (obj.promoType=="UnUsed")
             {
                 voucherTypeFilter = x => x.IsUsed == 1;
             }
-            else if(obj.VoucherType=="UnUsed")
+            else if(obj.promoType=="UnUsed")
             {
                 voucherTypeFilter = x => x.IsUsed == 0;
             }
             //var voucherList = dbContext.Customer_Vouchers.Where(voucherTypeFilter).ToList();
-            var voucherList = (from r in dbContext.customer_vouchers.Where(voucherTypeFilter)
+            var voucherList = (from r in dbContext.Customer_Vouchers.Where(voucherTypeFilter)
                                join t in dbContext.Vouchers on r.VoucherID equals t.ID
                                select new VoucherInfoWithExpireDate
                                {
                                    PromoCode = r.PromoCode,
                                    QRCode = r.QRCode,
-                                   ExpiryDate = t.Expiry_Date
+                                   ExpiryDate = t.Expiry_Date.Value
                                }
 
                                 ).OrderBy(a => a.ExpiryDate).ToList();
             respModel.totalCount = voucherList.Count();
             for(int i = 0; i< respModel.totalCount; i++)
             {
-                var voucher = new VoucherInfoRespModel()
+                var voucher = new PromoCodeInfoRespModel()
                 {
                     promoCode = voucherList[i].PromoCode,
-                    QRCode = voucherList[i].QRCode,
+                    QRCode = "data:image/jpeg;base64," + BitConverter.ToString(voucherList[i].QRCode),
                     ExpiryDate = voucherList[i].ExpiryDate
                 };
-                respModel.voucherList.Add(voucher);
+                respModel.promoCodeList.Add(voucher);
             }
-
+            dbContext.Dispose();
             return respModel;
         }
+        public async Task<VoucherListRespModel> GetVoucherList(GetVoucherRequestModel obj)
+        {
+            var respModel = new VoucherListRespModel();
+            #region check JWT
+            if (!tokenService.IsTokenValid(configuration["Jwt:Key"].ToString(), configuration["Jwt:Issuer"].ToString(), Helper.Helper.DecryptString(obj.SessionID)))
+            {
+                respModel.RespDescription = "Please try to login again!";
+                return respModel;
+            }
+            #endregion
+            Expression<Func<voucher, bool>> voucherTypeFilter = x => true;
+            if (obj.VoucherID > 0)
+            {
+                voucherTypeFilter = x => x.ID == obj.VoucherID;
+            }
+            var voucherList = dbContext.Vouchers.Where(a=>a.IsActive==1 && a.Expiry_Date>=DateTime.Now).Where(voucherTypeFilter).Select(a=>new VoucherInfo() {
+                Amount=a.Amount.Value,
+                BuyType=a.Buy_Type,
+                Description=a.Description,
+                Discount=a.Discount.Value,
+                Title=a.Title,
+                ExpiryDate=a.Expiry_Date,
+                VoucherID=a.ID,
+                Image= "data:image/jpeg;base64," + BitConverter.ToString(a.Image)
+            }).ToList();
+            
+            respModel.totalCount = voucherList.Count();
+            respModel.voucherList = voucherList;
+            
+            dbContext.Dispose();
+            return respModel;
+        }
+
         private string GeneratePromoCode(int int_length = 6, int str_length = 5)
         {
             Random random = new Random();
@@ -135,6 +214,36 @@ namespace EStore.BuinessLayer.EStore
                 return ms.ToArray();
             }
         }
+
+        private string CheckValidateToBuy(string phoneNumber, int voucherID, int qty, out bool allow)
+        {
+            var voucherInfo = dbContext.Vouchers.Where(a => a.ID == voucherID).FirstOrDefault();
+            string reason = "Not allowed";
+            allow = false;
+            if (voucherInfo == null)
+            {
+                reason = "Voucher ID does not exist in the system";
+                allow = false;
+                return reason;
+            }
+            var boughtVoucherCount = dbContext.Customer_Vouchers.Where(a => a.VoucherID == voucherID).Count();
+            if (boughtVoucherCount >= voucherInfo.MaximumVoucherPerUser)
+            {
+                reason = "Sorry. This user has reached the maximum voucher limit per person.";
+                allow = false;
+                return reason;
+            }
+            if(boughtVoucherCount + qty > voucherInfo.MaximumVoucherPerUser)
+            {
+                reason = $"Sorry. maximim voucher per person is {voucherInfo.MaximumVoucherPerUser} and this user already bought {boughtVoucherCount} voucher(s)."+
+                            $"This user Can only buy {voucherInfo.MaximumVoucherPerUser-boughtVoucherCount} more voucher for this Voucher type.";
+                allow = false;
+                return reason;
+            }
+            
+            return reason;
+        }
+
     }
 }
 
