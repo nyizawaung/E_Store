@@ -46,7 +46,7 @@ namespace EStore.BuinessLayer.CMS
                 CreatedDate = DateTime.Now,
                 Description = obj.Description,
                 Expiry_Date = obj.Expiry_Date,
-                Image = Convert.FromBase64String(obj.Image),
+                Image = Convert.FromBase64String("data:image/jpeg;base64,"+obj.Image),
                 IsActive = 1,
                 MaximumVoucherPerUser = obj.MaximumVoucherPerUser,
                 PaymentMethod = obj.Payment_Method,
@@ -119,7 +119,22 @@ namespace EStore.BuinessLayer.CMS
             {
                 voucherTypeFilter = x => x.ID == obj.VoucherID;
             }
-            var voucherList = dbContext.Vouchers.Where(a => a.IsActive == 1 && a.Expiry_Date >= DateTime.Now).Where(voucherTypeFilter).ToList();
+            var voucherList = dbContext.Vouchers.Where(a => a.IsActive == 1 && a.Expiry_Date >= DateTime.Now).Where(voucherTypeFilter).Select(a=>new voucher {
+               ID = a.ID,
+            Amount = a.Amount,
+            Title = a.Title,
+            Buy_Type = a.Buy_Type,
+            CreatedDate = a.CreatedDate,
+            Description = a.Description,
+            Expiry_Date = a.Expiry_Date,
+            IsActive = a.IsActive,
+            MaximumVoucherPerUser = a.MaximumVoucherPerUser,
+            PaymentMethod = a.PaymentMethod,
+            Discount = a.Discount,
+            Price = a.Price,
+            Quantity = a.Quantity,
+            Image=a.Image
+        }).ToList();
             respModel.totalCount = voucherList.Count();
             respModel.vouchers = voucherList;
             respModel.status = "success";

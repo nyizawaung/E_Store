@@ -178,6 +178,64 @@ namespace EStore.BuinessLayer.EStore
             dbContext.Dispose();
             return respModel;
         }
+        public async Task<ItemListRespModel> GetItemList(ItemListRequestModel obj)
+        {
+            var respModel = new ItemListRespModel();
+            #region check JWT
+            if (!tokenService.IsTokenValid(configuration["Jwt:Key"].ToString(), configuration["Jwt:Issuer"].ToString(), Helper.Helper.DecryptString(obj.SessionID)))
+            {
+                respModel.RespDescription = "Please try to login again!";
+                return respModel;
+            }
+            #endregion
+
+            respModel.items = dbContext.Items.Where(a => a.IsActive == 1).Select(a => new ItemInfo
+            {
+                ItemID=a.ID,
+                Name=a.Name,
+                Price=a.Price.Value
+            }).ToList();
+            respModel.status = "success";
+            respModel.RespDescription = "success";
+            respModel.totalCount = respModel.items.Count();
+            return respModel;
+        }
+
+        public async Task<ItemBuyRespModel> BuyItem(ItemBuyRequestModel obj)
+        {
+            var respModel = new ItemBuyRespModel();
+            #region check JWT
+            if (!tokenService.IsTokenValid(configuration["Jwt:Key"].ToString(), configuration["Jwt:Issuer"].ToString(), Helper.Helper.DecryptString(obj.SessionID)))
+            {
+                respModel.status = "Fail";
+                respModel.RespDescription = "Please try to login again!";
+                return respModel;
+            }
+            #endregion
+            var itemInfo = dbContext.Items.Where(a => a.ID == obj.ItemID).FirstOrDefault();
+            if (itemInfo == null)
+            {
+                respModel.status = "Fail";
+                respModel.RespDescription = "Please try to login again!";
+                return respModel;
+            }
+
+            #region calculate totalprice and netamount
+            respModel.TotalPrice = (obj.qty * itemInfo.Price).Value;
+            decimal discountAmount = 0;
+            if (!string.IsNullOrEmpty(obj.promoCode))
+            {
+                discountAmount = (from r in dbContext.Customer_Vouchers.Where(a => a.PromoCode == obj.promoCode && a.IsUsed == 0)
+                               join t in dbContext.Vouchers.Where(a => a.Expiry_Date >= DateTime.Now) on r.VoucherID equals t.ID
+                               select t.Amount).FirstOrDefault().Value;
+            }
+            #endregion
+            respModel.NetAmount = respModel.TotalPrice - discountAmount;
+            respModel.status = "success";
+            respModel.RespDescription = "success";
+            return respModel;
+
+        }
 
         private string GeneratePromoCode(int int_length = 6, int str_length = 5)
         {
@@ -243,7 +301,6 @@ namespace EStore.BuinessLayer.EStore
             
             return reason;
         }
-
     }
 }
 

@@ -15,11 +15,12 @@ namespace EStore.Model
         public DbSet<voucher> Vouchers { get; set; }
         public DbSet<customer_voucher> Customer_Vouchers { get; set; }
         public DbSet<admin> Admins { get; set; }
+        public DbSet<item> Items { get; set; }
+        public DbSet<item_purchase_history> Item_Purchase_Histories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder){
 
             base.OnModelCreating(modelBuilder);
-
         }
     }
 }

@@ -12,5 +12,7 @@ namespace EStore.BuinessLayer.EStore
         Task<BuyEVoucherRespModel> BuyEVoucher(BuyEVoucherRequestModel obj);
         Task<VoucherListRespModel> GetVoucherList(GetVoucherRequestModel obj);
         Task<GetPromoCodeRespModel> GetPromoCodeList(GetPromoCodeRequestModel obj);
+        Task<ItemListRespModel> GetItemList(ItemListRequestModel obj);
+        Task<ItemBuyRespModel> BuyItem(ItemBuyRequestModel obj);
     }
 }
