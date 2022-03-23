@@ -89,7 +89,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                logServices.Logging(obj, new { Result = respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(respModel);
         }
@@ -108,7 +108,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                logServices.Logging(obj, new { Result = respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(respModel);
         }
@@ -188,7 +188,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                logServices.Logging(obj, new { Result = respModel.RespDescription } this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(respModel);
         }

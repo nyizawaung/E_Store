@@ -71,7 +71,7 @@ namespace EStore.Controller
             try
             {
                 respModel = await cmsBusinessLayer.GetVoucherList(obj);
-                respModel.RespDescription = "Success";
+                //respModel.RespDescription = "Success";
             }
             catch (Exception ex)
             {
@@ -79,7 +79,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                logServices.Logging(obj, new {Result= respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(respModel);
         }

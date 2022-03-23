@@ -197,7 +197,7 @@ namespace EStore.BuinessLayer.EStore
 
             respModel.totalCount = voucherList.Count();
             respModel.voucherList = voucherList;
-
+            respModel.RespDescription = "success";
             
             return respModel;
         }
