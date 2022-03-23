@@ -15,7 +15,7 @@ namespace EStore.Model
         public string Title { get; set; }
         public string Description { get; set; }
         public Nullable<DateTime> Expiry_Date { get; set; }
-        public byte[] Image { get; set; }
+        public string Image { get; set; }
         public decimal? Amount { get; set; }
         public string PaymentMethod { get; set; }
         public int? Discount { get; set; }

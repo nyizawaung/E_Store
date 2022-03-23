@@ -6,6 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using EStore.Model;
 using EStore.BuinessLayer.CMS;
+using EStore.Services;
+using Microsoft.AspNetCore.Http.Extensions;
+using System.Threading;
 
 namespace EStore.Controller
 {
@@ -13,9 +16,11 @@ namespace EStore.Controller
     public class CMSController : ControllerBase
     {
         ICMSBusinessLayer cmsBusinessLayer;
-        public CMSController(ICMSBusinessLayer cms)
+        ILogServices logServices;
+        public CMSController(ICMSBusinessLayer cms,ILogServices log)
         {
             cmsBusinessLayer = cms;
+            logServices = log;
         }
 
         [Route("api/CMS/CreateVoucher")]
@@ -31,6 +36,10 @@ namespace EStore.Controller
             {
                 result.status = "Fail";
                 result.reason = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, result, this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(result);
         }
@@ -48,13 +57,16 @@ namespace EStore.Controller
                 result.status = "Fail";
                 result.reason = ex.Message;
             }
+            finally
+            {
+                logServices.Logging(obj, result, this.Request.GetDisplayUrl(), obj.UserID);
+            }
             return Ok(result);
         }
         [Route("api/CMS/GetVoucher")]
         [HttpPost]
         public async Task<IActionResult> VoucherList(GetCMSVoucherRequestModel obj)
         {
-            var error = "";
             var respModel = new CMSVoucherRespModel();
             try
             {
@@ -63,8 +75,11 @@ namespace EStore.Controller
             }
             catch (Exception ex)
             {
-                error = ex.Message;
                 respModel.RespDescription = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(respModel);
         }

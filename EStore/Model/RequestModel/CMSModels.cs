@@ -53,8 +53,9 @@ namespace EStore.Model
         public string Description { get; set; }
         [Required]
         public DateTime Expiry_Date { get; set; }
-        [Required]
         public string Image { get; set; }
+        [Required]
+        public string ImageURL { get; set; }
         [Required]
         public decimal Amount { get; set; }
         [Required]
@@ -70,6 +71,7 @@ namespace EStore.Model
         public int MaximumVoucherPerUser { get; set; }
         [Required]
         public decimal Price { get; set; }
+        [Required]
         public int IsActive { get; set; }
     }
 

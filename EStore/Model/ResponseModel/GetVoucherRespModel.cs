@@ -16,6 +16,9 @@ namespace EStore.Model
         public string promoCode { get; set; }
         public string QRCode { get; set; }
         public DateTime ExpiryDate{get;set;}
+        public int IsUsed { get; set; }
+        public string PhoneNumber { get; set; }
+        public string UserName { get; set; }
     }
 
     public class VoucherListRespModel

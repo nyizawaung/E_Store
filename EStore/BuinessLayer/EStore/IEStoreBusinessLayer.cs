@@ -14,5 +14,7 @@ namespace EStore.BuinessLayer.EStore
         Task<GetPromoCodeRespModel> GetPromoCodeList(GetPromoCodeRequestModel obj);
         Task<ItemListRespModel> GetItemList(ItemListRequestModel obj);
         Task<ItemBuyRespModel> BuyItem(ItemBuyRequestModel obj);
+        Task<PaymentMethodRespModel> GetPaymentMethod(PaymentMethodRequestModel obj);
+        Task<ItemPurchaseHistoryRespModel> ItemPurchaseHistory(ItemPurchaseHistoryRequestModel obj);
     }
 }

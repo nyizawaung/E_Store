@@ -21,61 +21,6 @@ namespace EStore.Helper
                              .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                              .ToArray();
         }
-        public static string Encrypt(string plainText)
-        {
-            var Key = StringToByteArray(KEY);
-            byte[] encrypted;
-            // Create a new AesManaged.    
-            using (AesManaged aes = new AesManaged())
-            {
-                // Create encryptor    
-                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, IV);
-                // Create MemoryStream    
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    // Create crypto stream using the CryptoStream class. This class is the key to encryption    
-                    // and encrypts and decrypts data from any given stream. In this case, we will pass a memory stream    
-                    // to encrypt    
-                    using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                    {
-                        // Create StreamWriter and write data to a stream    
-                        using (StreamWriter sw = new StreamWriter(cs))
-                            sw.Write(plainText);
-                        encrypted = ms.ToArray();
-                        
-                    }
-                }
-            }
-            // Return encrypted data    
-            string utfString = Encoding.UTF32.GetString(encrypted, 0, encrypted.Length);
-            return utfString;
-        }
-        public static string Decrypt(string text)
-        {
-            //var cipherText = Convert.FromBase64String(text);
-            var cipherText = Encoding.UTF32.GetBytes(text);
-            var Key = StringToByteArray(KEY);
-            string plaintext = null;
-            // Create AesManaged    
-            using (AesManaged aes = new AesManaged())
-            {
-                // Create a decryptor    
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, IV);
-                // Create the streams used for decryption.    
-                using (MemoryStream ms = new MemoryStream(cipherText))
-                {
-                    // Create crypto stream    
-                    using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read)) //Read
-                    {
-                        // Read crypto stream    
-                        using (StreamReader reader = new StreamReader(cs))
-                            plaintext = reader.ReadToEnd();
-                    }
-                }
-            }
-            return plaintext;
-        }
-
         public static string EncryptString(string plainText)
         {
             byte[] iv = new byte[16];
@@ -108,26 +53,81 @@ namespace EStore.Helper
         public static string DecryptString(string cipherText)
         {
             byte[] iv = new byte[16];
-            byte[] buffer = Convert.FromBase64String(cipherText);
+            
 
-            using (Aes aes = Aes.Create())
+            try
             {
-                aes.Key = Encoding.UTF8.GetBytes(KEY);
-                aes.IV = iv;
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-
-                using (MemoryStream memoryStream = new MemoryStream(buffer))
+                byte[] buffer = Convert.FromBase64String(cipherText);
+                using (Aes aes = Aes.Create())
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
+                    aes.Key = Encoding.UTF8.GetBytes(KEY);
+                    aes.IV = iv;
+                    ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                    using (MemoryStream memoryStream = new MemoryStream(buffer))
                     {
-                        using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                        using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
                         {
-                            return streamReader.ReadToEnd();
+                            using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                            {
+                                return streamReader.ReadToEnd();
+                            }
                         }
                     }
                 }
             }
+            catch(Exception ex)
+            {
+                return null;
+            }
+           
         }
 
+        public static void DeleteImage(string ImageNameUrl)
+        {
+            string fullPath = ImageNameUrl;
+            if (System.IO.File.Exists(fullPath))
+            {
+                System.IO.File.Delete(fullPath);
+            }
+
+        }
+        public static System.Drawing.Image Base64ToImage(string base64String)
+        {
+            byte[] imageBytes = Convert.FromBase64String(base64String);
+            System.IO.MemoryStream ms = new System.IO.MemoryStream(imageBytes, 0, imageBytes.Length);
+            ms.Write(imageBytes, 0, imageBytes.Length);
+            System.Drawing.Image image = System.Drawing.Image.FromStream(ms, true);
+            return image;
+        }
+        public static string GetFileExtension(string base64String)
+        {
+            var data = base64String.Substring(0, 5);
+
+            switch (data.ToUpper())
+            {
+                case "IVBOR":
+                    return ".png";
+                case "/9J/4":
+                    return ".jpg";
+                case "AAAAF":
+                    return ".mp4";
+                case "JVBER":
+                    return ".pdf";
+                case "AAABA":
+                    return ".ico";
+                case "UMFYI":
+                    return ".rar";
+                case "E1XYD":
+                    return ".rtf";
+                case "U1PKC":
+                    return ".txt";
+                case "MQOWM":
+                case "77U/M":
+                    return ".srt";
+                default:
+                    return string.Empty;
+            }
+        }
     }
 }

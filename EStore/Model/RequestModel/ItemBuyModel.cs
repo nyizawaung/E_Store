@@ -49,4 +49,18 @@ namespace EStore.Model
         public string Name { get; set; }
         public decimal Price { get; set; }
     }
+
+    public class ItemPurchaseHistoryRequestModel
+    {
+        [Required]
+        public int UserID { get; set; }
+        [Required]
+        public string SessionID { get; set; }
+    }
+    public class ItemPurchaseHistoryRespModel
+    {
+        public string status { get; set; }
+        public string RespDescription { get; set; }
+        public List<item_purchase_history> histories { get; set; }
+    }
 }

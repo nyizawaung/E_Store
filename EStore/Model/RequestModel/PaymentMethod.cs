@@ -6,18 +6,17 @@ using System.Threading.Tasks;
 
 namespace EStore.Model
 {
-    public class GetPromoCodeRequestModel
+    public class PaymentMethodRequestModel
     {
         [Required]
         public int UserID { get; set; }
+        [Required]
         public string SessionID { get; set; }
-        public string promoType { get; set; } = "all";
     }
-    public class GetVoucherRequestModel
+    public class PaymentMethodRespModel
     {
-        [Required]
-        public int UserID { get; set; }
-        public string SessionID { get; set; }
-        public int? VoucherID { get; set; }
+        public string status { get; set; }
+        public string RespDescription { get; set; }
+        public List<paymentmethod> paymentmethods { get; set; }
     }
 }

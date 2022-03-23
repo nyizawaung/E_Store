@@ -37,9 +37,11 @@ namespace EStore
             services.AddSession();
             services.AddDbContext<ESDBContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
             //services.AddDbContext<ESDBContext>();
+            services.AddSwaggerGen();
             services.AddScoped<IEStoreBusinessLayer, EStoreBusinessLayer>();
             services.AddScoped<ICMSBusinessLayer, CMSBusinessLayer>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<ILogServices, LogService>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -73,6 +75,14 @@ namespace EStore
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger(c =>
+            {
+                c.SerializeAsV2 = true;
+            });
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.)
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -95,6 +105,11 @@ namespace EStore
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.RoutePrefix = string.Empty;
             });
             //app.UseEndpoints(endpoints =>
             //{

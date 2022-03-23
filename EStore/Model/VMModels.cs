@@ -11,7 +11,8 @@ namespace EStore.Model
     public class VoucherInfoWithExpireDate
     {
         public string PromoCode { get; set; }
-        public byte[] QRCode { get; set; }
+        public string QRCode { get; set; }
         public DateTime ExpiryDate { get; set; }
+        public int IsUsed { get; set; }
     }
 }

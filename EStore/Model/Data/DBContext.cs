@@ -17,6 +17,8 @@ namespace EStore.Model
         public DbSet<admin> Admins { get; set; }
         public DbSet<item> Items { get; set; }
         public DbSet<item_purchase_history> Item_Purchase_Histories { get; set; }
+        public DbSet<paymentmethod> PaymentMethods { get; set; }
+        public DbSet<log> Logs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder){
 

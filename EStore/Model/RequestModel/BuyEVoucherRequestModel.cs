@@ -20,7 +20,6 @@ namespace EStore.Model
         
         public string CardNumber { get; set; }
 
-        public string CashAmount { get; set; }
         public string UserName { get; set; }
         [Required]
         public string PhoneNumber { get; set; } 

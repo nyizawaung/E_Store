@@ -15,7 +15,7 @@ namespace EStore.BuinessLayer.CMS
         private ESDBContext dbContext;
         private ITokenService tokenService;
         private IConfiguration configuration;
-        public CMSBusinessLayer(ESDBContext context, ITokenService tokenService,IConfiguration config)
+        public CMSBusinessLayer(ESDBContext context, ITokenService tokenService, IConfiguration config)
         {
             dbContext = context;
             this.tokenService = tokenService;
@@ -46,7 +46,6 @@ namespace EStore.BuinessLayer.CMS
                 CreatedDate = DateTime.Now,
                 Description = obj.Description,
                 Expiry_Date = obj.Expiry_Date,
-                Image = Convert.FromBase64String("data:image/jpeg;base64,"+obj.Image),
                 IsActive = 1,
                 MaximumVoucherPerUser = obj.MaximumVoucherPerUser,
                 PaymentMethod = obj.Payment_Method,
@@ -54,9 +53,15 @@ namespace EStore.BuinessLayer.CMS
                 Price = obj.Price,
                 Quantity = obj.Quantity
             };
+            var LongTick = DateTime.Now.Ticks;
+            #region store iamge
+            voucher.Image = "Images/Vouchers/Voucher_" + LongTick + Helper.Helper.GetFileExtension(obj.Image);
+            Helper.Helper.Base64ToImage(obj.Image).Save(voucher.Image);
+            #endregion
+
             await dbContext.AddAsync<voucher>(voucher);
             await dbContext.SaveChangesAsync();
-            dbContext.Dispose();
+            
             respModel.status = "success";
             respModel.status = "Successfully created";
             return respModel;
@@ -92,15 +97,39 @@ namespace EStore.BuinessLayer.CMS
             voucher.CreatedDate = obj.CreatedDate;
             voucher.Description = obj.Description;
             voucher.Expiry_Date = obj.Expiry_Date;
-            voucher.Image = Convert.FromBase64String(obj.Image);
+            //voucher.Image = Convert.FromBase64String(obj.Image);
             voucher.IsActive = obj.IsActive;
             voucher.MaximumVoucherPerUser = obj.MaximumVoucherPerUser;
             voucher.PaymentMethod = obj.Payment_Method;
             voucher.Discount = obj.Payment_Method_Discount;
             voucher.Price = obj.Price;
             voucher.Quantity = obj.Quantity;
+
+            #region images
+            var LongTick = DateTime.Now.Ticks;
+            if (!string.IsNullOrEmpty(obj.Image))
+            {
+                //var existingData = otcDataLayer.Wallet_DisplayCommodityAlertDetail(reqModel.ID); // Don't know why select from CommodityAlert
+                var existingImage = dbContext.Vouchers.Where(a => a.ID == obj.VoucherID).Select(a => a.Image).FirstOrDefault();
+                if (!string.IsNullOrEmpty(existingImage))
+                {
+                    Helper.Helper.DeleteImage(existingImage);
+                }
+                voucher.Image = "Images/Vouchers/Voucher_" + LongTick + Helper.Helper.GetFileExtension(obj.Image);
+                Helper.Helper.Base64ToImage(obj.Image).Save(voucher.Image);
+            }
+            else
+            {
+                voucher.Image = obj.ImageURL;
+            }
+            
+            #endregion
+
             await dbContext.SaveChangesAsync();
-            dbContext.Dispose();
+            
+            respModel.status = "success";
+            respModel.reason = "success";
+
             return respModel;
         }
         public async Task<CMSVoucherRespModel> GetVoucherList(GetCMSVoucherRequestModel obj)
@@ -119,27 +148,28 @@ namespace EStore.BuinessLayer.CMS
             {
                 voucherTypeFilter = x => x.ID == obj.VoucherID;
             }
-            var voucherList = dbContext.Vouchers.Where(a => a.IsActive == 1 && a.Expiry_Date >= DateTime.Now).Where(voucherTypeFilter).Select(a=>new voucher {
-               ID = a.ID,
-            Amount = a.Amount,
-            Title = a.Title,
-            Buy_Type = a.Buy_Type,
-            CreatedDate = a.CreatedDate,
-            Description = a.Description,
-            Expiry_Date = a.Expiry_Date,
-            IsActive = a.IsActive,
-            MaximumVoucherPerUser = a.MaximumVoucherPerUser,
-            PaymentMethod = a.PaymentMethod,
-            Discount = a.Discount,
-            Price = a.Price,
-            Quantity = a.Quantity,
-            Image=a.Image
-        }).ToList();
+            var voucherList = dbContext.Vouchers.Where(a => a.IsActive == 1 && a.Expiry_Date >= DateTime.Now).Where(voucherTypeFilter).Select(a => new voucher
+            {
+                ID = a.ID,
+                Amount = a.Amount,
+                Title = a.Title,
+                Buy_Type = a.Buy_Type,
+                CreatedDate = a.CreatedDate,
+                Description = a.Description,
+                Expiry_Date = a.Expiry_Date,
+                IsActive = a.IsActive,
+                MaximumVoucherPerUser = a.MaximumVoucherPerUser,
+                PaymentMethod = a.PaymentMethod,
+                Discount = a.Discount,
+                Price = a.Price,
+                Quantity = a.Quantity,
+                Image = a.Image
+            }).ToList();
             respModel.totalCount = voucherList.Count();
             respModel.vouchers = voucherList;
             respModel.status = "success";
             respModel.RespDescription = "success";
-            dbContext.Dispose();
+            
             return respModel;
         }
 

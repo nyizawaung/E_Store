@@ -19,7 +19,7 @@ namespace EStore.Model
         public Nullable<DateTime> UsedDate { get; set; }
         [MaxLength(11)]
         public string PromoCode { get; set; }
-        public byte[] QRCode { get; set; }
+        public string QRCode { get; set; }
         public Nullable<DateTime> CreatedDate { get; set; }
     }
 }

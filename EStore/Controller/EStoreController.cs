@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EStore.BuinessLayer.EStore;
+using Microsoft.AspNetCore.Http.Extensions;
+using System.Threading;
 
 namespace EStore.Controller
 {
@@ -14,11 +16,12 @@ namespace EStore.Controller
     public class EStoreController : ControllerBase
     {
         private readonly IEStoreBusinessLayer eStoreBusinessLayer;
-        //private readonly ITokenService tokenService;
-        public EStoreController(IEStoreBusinessLayer _estoreBusinessLayer/*,ITokenService _tokenservice*/)
+        private readonly ILogServices logServices;
+        
+        public EStoreController(IEStoreBusinessLayer _estoreBusinessLayer,ILogServices log)
         {
             eStoreBusinessLayer = _estoreBusinessLayer;
-            //tokenService = _tokenservice;
+            logServices = log;
         }        
         [HttpPost]
         [Route("api/EStore/Login")]
@@ -35,6 +38,10 @@ namespace EStore.Controller
                 error = ex.Message;
                 respModel.RespDescription = ex.Message;
             }
+            finally {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), 0);
+                    }
+
             return Ok(respModel);
         }
 
@@ -49,25 +56,40 @@ namespace EStore.Controller
                     return BadRequest("Required CardNumber");
                 }
             }
+            var respModel = new BuyEVoucherRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.BuyEVoucher(obj);
+            }
+            catch (Exception ex)
+            {
+                respModel.status = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+            }
+
             var result = await eStoreBusinessLayer.BuyEVoucher(obj);
             return Ok(result);
         }
 
-        [Route("api/EStore/PurchaseHistory")]
+        [Route("api/EStore/PromoPurchaseHistory")]
         [HttpPost]
-        public async Task<IActionResult> PurchaseHistory(GetPromoCodeRequestModel obj)
+        public async Task<IActionResult> PromoPurchaseHistory(GetPromoCodeRequestModel obj)
         {   
-            var error = "";
             var respModel = new GetPromoCodeRespModel();
             try
             {
                 respModel = await eStoreBusinessLayer.GetPromoCodeList(obj);
-                respModel.RespDescription = "Success";
             }
             catch(Exception ex)
             {
-                error = ex.Message;
                 respModel.RespDescription = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(respModel);
         }
@@ -75,19 +97,101 @@ namespace EStore.Controller
         [HttpPost]
         public async Task<IActionResult> VoucherList(GetVoucherRequestModel obj)
         { 
-            var error = "";
             var respModel = new VoucherListRespModel();
             try
             {
                 respModel = await eStoreBusinessLayer.GetVoucherList(obj);
-                respModel.RespDescription = "Success";
             }
             catch (Exception ex)
             {
-                error = ex.Message;
                 respModel.RespDescription = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+            }
+            return Ok(respModel);
+        }
+        [Route("api/EStore/Items")]
+        [HttpPost]
+        public async Task<IActionResult> itemList(ItemListRequestModel obj)
+        {
+            var respModel = new ItemListRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.GetItemList(obj);
+            }
+            catch (Exception ex)
+            {
+                respModel.RespDescription = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+            }
+            return Ok(respModel);
+        }
+
+        [Route("api/EStore/BuyItems")]
+        [HttpPost]
+        public async Task<IActionResult> buyItems(ItemBuyRequestModel obj)
+        {
+            var respModel = new ItemBuyRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.BuyItem(obj);
+            }
+            catch (Exception ex)
+            {
+                respModel.RespDescription = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+            }
+            return Ok(respModel);
+        }
+
+        [Route("api/EStore/PaymentMethod")]
+        [HttpPost]
+        public async Task<IActionResult> PaymentMethod(PaymentMethodRequestModel obj)
+        {
+            var error = "";
+            var respModel = new PaymentMethodRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.GetPaymentMethod(obj);
+            }
+            catch (Exception ex)
+            {
+                respModel.RespDescription = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+            }
+            return Ok(respModel);
+        }
+
+        [Route("api/EStore/ItemPurchaseHistory")]
+        [HttpPost]
+        public async Task<IActionResult> ItemPurchaseHistory(ItemPurchaseHistoryRequestModel obj)
+        {
+            var respModel = new ItemPurchaseHistoryRespModel();
+            try
+            {
+                respModel = await eStoreBusinessLayer.ItemPurchaseHistory(obj);
+            }
+            catch (Exception ex)
+            {
+                respModel.RespDescription = ex.Message;
+            }
+            finally
+            {
+                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
             }
             return Ok(respModel);
         }
     }
+
 }
