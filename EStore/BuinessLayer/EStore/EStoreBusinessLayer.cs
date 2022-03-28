@@ -165,7 +165,7 @@ namespace EStore.BuinessLayer.EStore
             //    };
             //    respModel.promoCodeList.Add(voucher);
             //}
-            
+            respModel.RespDescription = "success";
             return respModel;
         }
         public async Task<VoucherListRespModel> GetVoucherList(GetVoucherRequestModel obj)
