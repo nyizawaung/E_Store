@@ -27,8 +27,8 @@ namespace EStore.Services
                     UserID = UserID,
                     CreateDate = DateTime.Now
                 };
-                dbContext.Logs.Add(log);
-                dbContext.SaveChanges();
+                dbContext.Logs.AddAsync(log);
+                dbContext.SaveChangesAsync();
             }
             catch(Exception ex)
             {

@@ -35,13 +35,19 @@ namespace EStore
         {
             services.AddControllers();
             services.AddSession();
-            services.AddDbContext<ESDBContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
+            services.AddDbContext<ESDBContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")),ServiceLifetime.Singleton);
             //services.AddDbContext<ESDBContext>();
             services.AddSwaggerGen();
             services.AddScoped<IEStoreBusinessLayer, EStoreBusinessLayer>();
             services.AddScoped<ICMSBusinessLayer, CMSBusinessLayer>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<ILogServices, LogService>();
+
+            //services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration =
+            //        $"{Configuration.GetValue<string>("Redis:Server")}:{Configuration.GetValue<int>("Redis:Port")},abortConnect = false,resolveDns=true";
+            //});
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters

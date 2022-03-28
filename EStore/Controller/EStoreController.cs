@@ -17,12 +17,12 @@ namespace EStore.Controller
     {
         private readonly IEStoreBusinessLayer eStoreBusinessLayer;
         private readonly ILogServices logServices;
-        
-        public EStoreController(IEStoreBusinessLayer _estoreBusinessLayer,ILogServices log)
+
+        public EStoreController(IEStoreBusinessLayer _estoreBusinessLayer, ILogServices log)
         {
             eStoreBusinessLayer = _estoreBusinessLayer;
             logServices = log;
-        }        
+        }
         [HttpPost]
         [Route("api/EStore/Login")]
         public async Task<IActionResult> Login(LoginRequestModel obj)
@@ -38,9 +38,10 @@ namespace EStore.Controller
                 error = ex.Message;
                 respModel.RespDescription = ex.Message;
             }
-            finally {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), 0);
-                    }
+            finally
+            {
+                new Thread(() => logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), 0));
+            }
 
             return Ok(respModel);
         }
@@ -51,7 +52,7 @@ namespace EStore.Controller
         {
             if (obj.PaymentType != "Cash")
             {
-                if(string.IsNullOrEmpty(obj.CardNumber))
+                if (string.IsNullOrEmpty(obj.CardNumber))
                 {
                     return BadRequest("Required CardNumber");
                 }
@@ -67,36 +68,36 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                new Thread(() => logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID));
             }
 
-            var result = await eStoreBusinessLayer.BuyEVoucher(obj);
-            return Ok(result);
+            //var result = await eStoreBusinessLayer.BuyEVoucher(obj);
+            return Ok(respModel);
         }
 
         [Route("api/EStore/PromoPurchaseHistory")]
         [HttpPost]
         public async Task<IActionResult> PromoPurchaseHistory(GetPromoCodeRequestModel obj)
-        {   
+        {
             var respModel = new GetPromoCodeRespModel();
             try
             {
                 respModel = await eStoreBusinessLayer.GetPromoCodeList(obj);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 respModel.RespDescription = ex.Message;
             }
             finally
             {
-                logServices.Logging(obj, new { Result = respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID);
+                new Thread(() => logServices.Logging(obj, new { Result = respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID));
             }
             return Ok(respModel);
         }
         [Route("api/EStore/VoucherList")]
         [HttpPost]
         public async Task<IActionResult> VoucherList(GetVoucherRequestModel obj)
-        { 
+        {
             var respModel = new VoucherListRespModel();
             try
             {
@@ -108,7 +109,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, new { Result = respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID);
+                new Thread(() => logServices.Logging(obj, new { Result = respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID));
             }
             return Ok(respModel);
         }
@@ -127,7 +128,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                new Thread(() => logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID)).Start();
             }
             return Ok(respModel);
         }
@@ -147,7 +148,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                new Thread(() => logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID)).Start();
             }
             return Ok(respModel);
         }
@@ -168,7 +169,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID);
+                new Thread(() => logServices.Logging(obj, respModel, this.Request.GetDisplayUrl(), obj.UserID)).Start();
             }
             return Ok(respModel);
         }
@@ -188,7 +189,7 @@ namespace EStore.Controller
             }
             finally
             {
-                logServices.Logging(obj, new { Result = respModel.RespDescription } ,this.Request.GetDisplayUrl(), obj.UserID);
+                new Thread(() => logServices.Logging(obj, new { Result = respModel.RespDescription }, this.Request.GetDisplayUrl(), obj.UserID)).Start();
             }
             return Ok(respModel);
         }

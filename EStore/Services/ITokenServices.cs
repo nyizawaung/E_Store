@@ -9,7 +9,7 @@ namespace EStore.Services
     public interface ITokenService
     {
         string BuildToken(string key, string issuer, admin user);
-        bool IsTokenValid(string key, string issuer, string token);
+        bool IsTokenValid(string key, string issuer, string token,int userID=1);
     }
 
 }
